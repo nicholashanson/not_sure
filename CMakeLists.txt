@@ -20,16 +20,19 @@ find_package(OpenSSL REQUIRED)
 # Collect project sources
 file(GLOB_RECURSE SRC_SOURCES "src/*.cpp")
 
+# Collect all unit test sources
+file(GLOB UNIT_TEST_SOURCES "tests/unit_tests/*.cpp")
+
 # Create test executable
 add_executable(tests
-    tests/unit_tests/test_get_gray_scale_histogram.cpp
-    ${SRC_SOURCES}   # Include project sources
+    ${UNIT_TEST_SOURCES}   # All unit tests
+    ${SRC_SOURCES}         # Include project sources
 )
 
 # Include src headers
 target_include_directories(tests PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
-# Link Catch2 and OpenSSL
+# Link Catch2 (and optionally OpenSSL if needed)
 target_link_libraries(tests PRIVATE
     Catch2::Catch2WithMain
 )
