@@ -23,7 +23,7 @@ namespace not_sure {
 
 	std::expected<class_statistics,std::string> get_class_statistics( const gray_scale_histogram_probabilities& probabilities, const uint8_t threshold ) {
 		if ( threshold > probabilities.size() ) {
-			std::unexpected( "Threshold is too high." );
+			return std::unexpected( "Threshold is too high." );
 		}
 		class_statistics statistics;
 		for ( std::size_t i = 0; i < threshold; ++i ) {
@@ -44,6 +44,13 @@ namespace not_sure {
 			return std::unexpected( "Total probability is greater than 1." );
 		}
 		return statistics;
+	}
+
+	double get_between_class_variance( const class_statistics& statistics ) {
+		return statistics.foreground_probability *
+           	   statistics.background_probability *
+           	 ( statistics.foreground_mean - statistics.background_mean ) *
+             ( statistics.foreground_mean - statistics.background_mean );
 	}
 
 } // namespace not_sure

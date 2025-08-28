@@ -32,4 +32,6 @@ namespace not_sure {
 
 	std::expected<class_statistics,std::string> get_class_statistics( const gray_scale_histogram_probabilities& probabilities, const uint8_t threshold );
 
+	double get_between_class_variance( const class_statistics& statistics );
+
 } // namespace not_sure
