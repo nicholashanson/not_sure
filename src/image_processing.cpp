@@ -2,13 +2,21 @@
 
 namespace not_sure {
 
-	gray_scale_histogram get_gray_scale_histogram( const std::vector<std::vector<uint8_t>>& gray_scale_image ) {
+	bool operator==( const gray_scale_image& gray, const binary_image& binary ) {
+		if ( gray.m_pixels.size() != binary.m_pixels.size() ) return false;
+	    if ( gray.m_width != binary.m_width || gray.m_height != binary.m_height ) return false;
+	    for ( std::size_t i = 0; i < gray.m_pixels.size(); ++i ) {
+	        uint8_t expected = ( binary.m_pixels[ i ] == binary_value::black ) ? 0 : 0xff;
+	        if ( gray.m_pixels[ i ] != expected ) return false;
+	    }
+	    return true;
+	}
+
+	gray_scale_histogram get_gray_scale_histogram( const gray_scale_image& image ) {
 		gray_scale_histogram histogram{}; 
-	    for (const auto& row : gray_scale_image) {
-	        for ( auto pixel : row ) {
-	            ++histogram[ pixel ]; 
-	    	}
-		}
+	    for ( std::size_t i = 0; i < image.m_pixels.size(); ++i ) { 
+	    	++histogram[ image.m_pixels[ i ] ]; 
+	    }
 		return histogram;
 	}
 
@@ -54,7 +62,7 @@ namespace not_sure {
              ( statistics.m_foreground_mean - statistics.m_background_mean );
 	}
 
-	std::expected<uint8_t,std::string> get_otsu_threshold( const std::vector<std::vector<uint8_t>> image ) {
+	std::expected<uint8_t,std::string> get_otsu_threshold( const gray_scale_image& image ) {
 		auto histogram = get_gray_scale_histogram( image );
 		auto probabilities = get_gray_scale_histogram_probabilities( histogram );
 		uint8_t optimum_threshold{};
@@ -71,6 +79,23 @@ namespace not_sure {
 			}
 		}
 		return optimum_threshold;
+	}
+
+	std::expected<binary_image,std::string> apply_otsu_threshold( const gray_scale_image& image ) {
+		binary_image result;
+		result.m_width = image.m_width; 
+		result.m_height = image.m_height;
+		result.m_pixels.resize( image.m_pixels.size() );
+		auto threshold_result = get_otsu_threshold( image );
+		if ( !threshold_result ) {
+			return std::unexpected( threshold_result.error() );
+		}
+		auto threshold = threshold_result.value();
+		std::cout << static_cast<int>( threshold ) << std::endl;
+		for ( std::size_t i = 0; i < image.m_pixels.size(); ++i ) {
+			result.m_pixels[ i ] = image.m_pixels[ i ] <= threshold ? binary_value::black : binary_value::white;
+		} 
+	    return result;
 	}
 
 } // namespace not_sure

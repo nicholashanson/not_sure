@@ -8,6 +8,37 @@
 
 namespace not_sure {
 
+	struct gray_scale_image {
+    	std::vector<uint8_t> m_pixels; 
+    	std::size_t m_width;
+    	std::size_t m_height;
+
+    	bool operator==( const gray_scale_image& other ) const {
+			return m_pixels == other.m_pixels && 
+				   m_width == other.m_width && 
+				   m_height == other.m_height;
+		}
+	};
+
+	enum class binary_value : uint8_t {
+		black = 0x00,
+		white = 0xff
+	};
+
+	struct binary_image {
+		std::vector<binary_value> m_pixels; 
+    	std::size_t m_width;
+    	std::size_t m_height;
+
+    	bool operator==( const binary_image& other ) const {
+			return m_pixels == other.m_pixels && 
+				   m_width == other.m_width && 
+				   m_height == other.m_height;
+		}
+	};
+
+	bool operator==( const gray_scale_image& gray, const binary_image& binary );
+
 	struct class_statistics {
 		double m_foreground_probability;
 		double m_background_probability;
@@ -38,7 +69,7 @@ namespace not_sure {
 
 	using gray_scale_histogram_probabilities = std::array<double,256>;
 
-	gray_scale_histogram get_gray_scale_histogram( const std::vector<std::vector<uint8_t>>& gray_scale_image );
+	gray_scale_histogram get_gray_scale_histogram( const gray_scale_image& image );
 
 	gray_scale_histogram_probabilities get_gray_scale_histogram_probabilities( const gray_scale_histogram& histogram );
 
@@ -46,6 +77,8 @@ namespace not_sure {
 
 	double get_between_class_variance( const class_statistics& statistics );
 
-	std::expected<uint8_t,std::string> get_otsu_threshold( const std::vector<std::vector<uint8_t>> image );
+	std::expected<uint8_t,std::string> get_otsu_threshold( const gray_scale_image& image );
+
+	std::expected<binary_image,std::string> apply_otsu_threshold( const gray_scale_image& image );
 
 } // namespace not_sure

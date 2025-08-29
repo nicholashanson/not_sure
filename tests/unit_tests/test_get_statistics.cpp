@@ -9,6 +9,10 @@ TEST_CASE( "Get Class Statistics" ) {
     probabilities[ 0 ] = 0.25;   
     probabilities[ 128 ] = 0.5;   
     probabilities[ 255 ] = 0.25; 
+    not_sure::class_statistics statistics = { /* foreground probability */ 0.25, 
+                                              /* background probability */ 0.75, 
+                                              /* foreground mean */ 0.0, 
+                                              /* background mena */ 170.333333 }; 
     not_sure::class_statistics expected_statistics( 0.25, 0.75, 0.0, 170.333333 ); 
     auto result = not_sure::get_class_statistics( probabilities, 10 );
     REQUIRE( result.has_value() == true );
