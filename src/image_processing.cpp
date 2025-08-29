@@ -26,31 +26,51 @@ namespace not_sure {
 			return std::unexpected( "Threshold is too high." );
 		}
 		class_statistics statistics;
-		for ( std::size_t i = 0; i < threshold; ++i ) {
-			statistics.foreground_probability += probabilities[ i ];
-			statistics.foreground_mean += i * probabilities[ i ];
+		for ( std::size_t i = 0; i <= threshold; ++i ) {
+			statistics.m_foreground_probability += probabilities[ i ];
+			statistics.m_foreground_mean += i * probabilities[ i ];
 		}
-		if ( statistics.foreground_probability > 0.0 ) {
-			statistics.foreground_mean /= statistics.foreground_probability;
+		if ( statistics.m_foreground_probability > 0.0 ) {
+			statistics.m_foreground_mean /= statistics.m_foreground_probability;
+		} else {
+			statistics.m_foreground_mean = 0.0;
 		}
-		for ( std::size_t i = threshold; i < probabilities.size(); ++i ) {
-			statistics.background_probability += probabilities[ i ];
-			statistics.background_mean += i * probabilities[ i ];
+		for ( std::size_t i = threshold + 1; i < probabilities.size(); ++i ) {
+			statistics.m_background_probability += probabilities[ i ];
+			statistics.m_background_mean += i * probabilities[ i ];
 		} 
-		if ( statistics.background_probability > 0.0 ) {
-			statistics.background_mean /= statistics.background_probability;
-		}
-		if ( statistics.background_probability + statistics.foreground_probability > 1.0 ) {
-			return std::unexpected( "Total probability is greater than 1." );
+		if ( statistics.m_background_probability > 0.0 ) {
+			statistics.m_background_mean /= statistics.m_background_probability;
+		} else {
+			statistics.m_background_mean = 0.0;
 		}
 		return statistics;
 	}
 
 	double get_between_class_variance( const class_statistics& statistics ) {
-		return statistics.foreground_probability *
-           	   statistics.background_probability *
-           	 ( statistics.foreground_mean - statistics.background_mean ) *
-             ( statistics.foreground_mean - statistics.background_mean );
+		return statistics.m_foreground_probability *
+           	   statistics.m_background_probability *
+           	 ( statistics.m_foreground_mean - statistics.m_background_mean ) *
+             ( statistics.m_foreground_mean - statistics.m_background_mean );
+	}
+
+	std::expected<uint8_t,std::string> get_otsu_threshold( const std::vector<std::vector<uint8_t>> image ) {
+		auto histogram = get_gray_scale_histogram( image );
+		auto probabilities = get_gray_scale_histogram_probabilities( histogram );
+		uint8_t optimum_threshold{};
+		double maximum_variance{};
+		for ( std::size_t threshold = 0; threshold < 256; ++threshold ) {
+			auto statistics_result = get_class_statistics( probabilities, threshold );
+			if ( !statistics_result ) {
+				return std::unexpected( statistics_result.error() );
+			}
+			auto variance = get_between_class_variance( statistics_result.value() );
+			if ( variance > maximum_variance ) {
+				maximum_variance = variance;
+				optimum_threshold = threshold;
+			}
+		}
+		return optimum_threshold;
 	}
 
 } // namespace not_sure

@@ -9,16 +9,28 @@
 namespace not_sure {
 
 	struct class_statistics {
-		double foreground_probability;
-		double background_probability;
-		double foreground_mean;
-		double background_mean;
+		double m_foreground_probability;
+		double m_background_probability;
+		double m_foreground_mean;
+		double m_background_mean;
+
+		class_statistics()
+        	: m_foreground_probability( 0.0 ),
+          	  m_background_probability( 0.0 ),
+          	  m_foreground_mean( 0.0 ),
+          	  m_background_mean( 0.0 ) {}
+
+        class_statistics( double foreground_probability, double background_probability, double foreground_mean, double background_mean ) 
+        	: m_foreground_probability( foreground_probability ),
+          	  m_background_probability( background_probability ),
+          	  m_foreground_mean( foreground_mean ),
+          	  m_background_mean( background_mean ) {}
 
 		bool operator==( const class_statistics& other ) const {
-			return foreground_probability == other.foreground_probability &&
-				   background_probability == other.background_probability &&
-				   foreground_mean == other.foreground_mean &&
-				   background_mean == other.background_mean;
+			return m_foreground_probability == other.m_foreground_probability &&
+				   m_background_probability == other.m_background_probability &&
+				   m_foreground_mean == other.m_foreground_mean &&
+				   m_background_mean == other.m_background_mean;
 		}
 	};
 
@@ -33,5 +45,7 @@ namespace not_sure {
 	std::expected<class_statistics,std::string> get_class_statistics( const gray_scale_histogram_probabilities& probabilities, const uint8_t threshold );
 
 	double get_between_class_variance( const class_statistics& statistics );
+
+	std::expected<uint8_t,std::string> get_otsu_threshold( const std::vector<std::vector<uint8_t>> image );
 
 } // namespace not_sure
